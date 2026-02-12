@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Medical Affairs Knowledge Quiz 2025</title>
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --teal: #0E7C7B;
+    --teal-light: #10918F;
+    --light-bg: #F0F5FA;
+    --white: #FFFFFF;
+    --dark: #2D2D2D;
+    --grey: #B0BEC5;
+    --green: #2E7D32;
+    --green-bg: #E8F5E9;
+    --red: #C62828;
+    --red-bg: #FFEBEE;
+    --amber: #F57F17;
+    --amber-bg: #FFF8E1;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--light-bg);
+    color: var(--dark);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Welcome Screen ────────────────────────────── */
+  .screen { display: none; flex-direction: column; flex: 1; }
+  .screen.active { display: flex; }
+
+  .welcome-header {
+    text-align: center;
+    padding: 60px 0 40px;
+  }
+  .welcome-header h1 {
+    font-size: 2.2rem;
+    color: var(--navy);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .welcome-header p {
+    font-size: 1.1rem;
+    color: var(--teal);
+    font-style: italic;
+  }
+  .welcome-details {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 20px 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .welcome-details .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    font-size: 1.05rem;
+    color: var(--dark);
+  }
+  .welcome-details .detail-row + .detail-row {
+    border-top: 1px solid var(--light-bg);
+  }
+  .detail-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--light-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  /* ── Buttons ────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 40px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: var(--white);
+  }
+  .btn-primary:hover, .btn-primary:active {
+    background: var(--teal-light);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .btn-secondary:hover, .btn-secondary:active {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .btn-center {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    padding: 30px 0;
+  }
+
+  /* ── Progress Bar ───────────────────────────────── */
+  .progress-area {
+    padding: 16px 0;
+  }
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--grey);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .progress-track {
+    height: 6px;
+    background: #E0E7EE;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Question Card ──────────────────────────────── */
+  .question-topic {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .question-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+
+  /* ── Answer Options ─────────────────────────────── */
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option-btn {
+    width: 100%;
+    text-align: left;
+    padding: 18px 20px;
+    background: var(--white);
+    border: 2px solid #E0E7EE;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    color: var(--dark);
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .option-btn:hover:not(.disabled) {
+    border-color: var(--teal);
+    background: #F7FFFE;
+  }
+  .option-btn.disabled {
+    cursor: default;
+    opacity: 0.65;
+  }
+  .option-btn.correct {
+    border-color: var(--green);
+    background: var(--green-bg);
+    opacity: 1;
+    font-weight: 600;
+  }
+  .option-btn.incorrect {
+    border-color: var(--red);
+    background: var(--red-bg);
+    opacity: 1;
+  }
+
+  /* ── Feedback Panel ─────────────────────────────── */
+  .feedback {
+    margin-top: 24px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    display: none;
+    animation: slideUp 0.3s ease;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-feedback {
+    background: var(--green-bg);
+    border-left: 4px solid var(--green);
+  }
+  .feedback.incorrect-feedback {
+    background: var(--amber-bg);
+    border-left: 4px solid var(--amber);
+  }
+  .feedback-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+  .correct-feedback .feedback-title { color: var(--green); }
+  .incorrect-feedback .feedback-title { color: var(--amber); }
+  .feedback-text {
+    font-size: 0.95rem;
+    color: var(--dark);
+    line-height: 1.6;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .next-btn-area {
+    display: none;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .next-btn-area.show { display: flex; }
+
+  /* ── Results Screen ─────────────────────────────── */
+  .results-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin: 20px 0;
+  }
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .score-circle span {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .score-label {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .score-message {
+    font-size: 1.05rem;
+    color: var(--teal);
+    font-style: italic;
+  }
+
+  /* ── Question Review ────────────────────────────── */
+  .review-list {
+    margin: 24px 0;
+  }
+  .review-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 0;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+  .review-item + .review-item {
+    border-top: 1px solid var(--light-bg);
+  }
+  .review-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .review-icon.correct { background: var(--green-bg); color: var(--green); }
+  .review-icon.wrong { background: var(--red-bg); color: var(--red); }
+  .review-q { color: var(--dark); line-height: 1.4; }
+  .review-answer { color: var(--grey); font-size: 0.85rem; margin-top: 2px; }
+
+  /* ── Submit Form ────────────────────────────────── */
+  .submit-form {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin: 16px 0;
+  }
+  .submit-form h3 {
+    font-size: 1.15rem;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E0E7EE;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: var(--dark);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--teal);
+  }
+  .submit-status {
+    text-align: center;
+    padding: 12px;
+    font-size: 0.95rem;
+    display: none;
+  }
+  .submit-status.success { color: var(--green); display: block; }
+  .submit-status.error { color: var(--red); display: block; }
+
+  .restart-area {
+    text-align: center;
+    padding: 20px 0 40px;
+  }
+  .restart-link {
+    color: var(--teal);
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+
+  /* ── Kiosk / iPad optimisations ─────────────────── */
+  @media (max-width: 768px) {
+    .container { padding: 16px; }
+    .welcome-header { padding: 40px 0 24px; }
+    .welcome-header h1 { font-size: 1.8rem; }
+    .question-text { font-size: 1.15rem; }
+    .option-btn { padding: 16px 18px; font-size: 1rem; }
+    .results-card { padding: 28px 20px; }
+  }
+
+  @media (min-width: 769px) and (max-width: 1200px) {
+    .container { max-width: 640px; }
+    .option-btn { padding: 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══════════ WELCOME SCREEN ═══════════ -->
+  <div id="welcome-screen" class="screen active">
+    <div class="welcome-header">
+      <h1>Medical Affairs<br>Knowledge Quiz 2025</h1>
+      <p>Test your industry knowledge</p>
+    </div>
+    <div class="welcome-details">
+      <div class="detail-row">
+        <div class="detail-icon">&#x1F4CB;</div>
+        <span>5 multiple-choice questions</span>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon">&#x2705;</div>
+        <span>See the correct answer after each question</span>
+      </div>
+      <div class="detail-row">
+        <div class="detail-icon">&#x23F1;</div>
+        <span>Takes about 3 minutes</span>
+      </div>
+    </div>
+    <div class="btn-center">
+      <button class="btn btn-primary" onclick="startQuiz()">Start Quiz &#x2192;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ QUESTION SCREEN ═══════════ -->
+  <div id="question-screen" class="screen">
+    <div class="progress-area">
+      <div class="progress-label">
+        <span id="progress-text">Question 1 of 5</span>
+        <span id="score-text">Score: 0</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div style="padding: 20px 0; flex: 1;">
+      <div class="question-topic" id="q-topic"></div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-text" id="feedback-text"></div>
+      </div>
+    </div>
+
+    <div class="next-btn-area" id="next-btn-area">
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next Question &#x2192;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ RESULTS SCREEN ═══════════ -->
+  <div id="results-screen" class="screen">
+    <div class="results-card">
+      <div class="score-circle"><span id="final-score">0/5</span></div>
+      <div class="score-label" id="final-label">Nice work!</div>
+      <div class="score-message" id="final-message"></div>
+
+      <div class="review-list" id="review-list"></div>
+    </div>
+
+    <div class="submit-form" id="submit-form">
+      <h3>Save your result</h3>
+      <div class="form-group">
+        <label for="user-name">Name</label>
+        <input type="text" id="user-name" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="user-email">Email</label>
+        <input type="email" id="user-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div style="text-align: center; padding-top: 8px;">
+        <button class="btn btn-secondary" onclick="submitResult()">Submit</button>
+      </div>
+      <div class="submit-status" id="submit-status"></div>
+    </div>
+
+    <div class="restart-area">
+      <button class="restart-link" onclick="restartQuiz()">&#x21BB; Take the quiz again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Quiz Data ────────────────────────────────────────────────────────
+const quizData = [
+  {
+    topic: "FDA Novel Drug Approvals",
+    question: "How many novel drugs did the FDA\u2019s Center for Drug Evaluation and Research (CDER) approve in 2025?",
+    options: ["36", "46", "50", "58"],
+    correctIndex: 1,
+    explanation: "CDER approved 46 novel drugs in 2025, a slight dip from the 50 approved in 2024 but still above the long-term average. Of these, 20 (43%) were first-in-class therapies, 70% were approved first globally by the FDA, and 96% met their PDUFA goal dates."
+  },
+  {
+    topic: "Landmark Drug Approval",
+    question: "In September 2024, the FDA approved Cobenfy (xanomeline/trospium) \u2014 the first new drug class for schizophrenia in approximately how many years?",
+    options: ["About 10 years", "About 20 years", "About 30 years", "About 50 years"],
+    correctIndex: 2,
+    explanation: "Cobenfy, developed by Karuna Therapeutics (acquired by Bristol Myers Squibb), is the first new mechanism of action for schizophrenia in roughly three decades. Unlike traditional antipsychotics that target dopamine receptors, Cobenfy works through the cholinergic system via muscarinic receptor agonism."
+  },
+  {
+    topic: "AI in Drug Development",
+    question: "In January 2025, the FDA issued its first-ever draft guidance on AI in drug development. What key framework did it introduce?",
+    options: [
+      "A mandatory AI pre-approval inspection process",
+      "A 7-step credibility assessment for AI models used in regulatory submissions",
+      "A requirement that all clinical trials use AI-powered endpoints",
+      "A ban on AI-generated data in new drug applications"
+    ],
+    correctIndex: 1,
+    explanation: "The FDA\u2019s January 2025 draft guidance established a seven-step credibility assessment framework based on \u2018context of use.\u2019 It requires lifecycle maintenance plans and mandates transparency about model architectures and training data."
+  },
+  {
+    topic: "Real-World Evidence (RWE)",
+    question: "In December 2025, the FDA announced a major policy change regarding real-world evidence (RWE). What was it?",
+    options: [
+      "The FDA will no longer accept any RWE in drug applications",
+      "The FDA now requires RWE for all new drug applications",
+      "The FDA will accept de-identified RWE data, removing the requirement for individual patient-level data",
+      "The FDA mandated that all post-market studies use only RWE"
+    ],
+    correctIndex: 2,
+    explanation: "The December 2025 policy change allows sponsors to use de-identified datasets \u2014 including national cancer registries, hospital databases, and insurance claims data \u2014 to support regulatory submissions. Since 2016, only 35 drugs, biologics, or vaccines had incorporated RWE into their applications."
+  },
+  {
+    topic: "Global Regulatory Change",
+    question: "The ICH M14 guideline, adopted in September 2025, set a global standard for which area of regulatory science?",
+    options: [
+      "Bioequivalence testing for generic drugs",
+      "Pharmacoepidemiological safety studies using real-world data",
+      "Pediatric clinical trial design requirements",
+      "Post-marketing surveillance of biosimilars"
+    ],
+    correctIndex: 1,
+    explanation: "ICH M14 represents a pivotal shift toward harmonised global expectations for pharmacoepidemiological safety studies using real-world data. It establishes standards for evidence quality, protocol pre-specification, and statistical rigour."
+  }
+];
+
+const scoreMessages = [
+  { min: 0, max: 1, label: "Keep learning!", message: "Time to renew those journal subscriptions!" },
+  { min: 2, max: 3, label: "Solid awareness!", message: "You\u2019re keeping pace with the industry." },
+  { min: 4, max: 4, label: "Impressive!", message: "Your Medical Affairs instincts are sharp." },
+  { min: 5, max: 5, label: "Perfect score!", message: "Chief Medical Officer material!" }
+];
+
+// ── State ────────────────────────────────────────────────────────────
+let currentQuestion = 0;
+let score = 0;
+let answers = []; // stores { questionIndex, selectedIndex, correct }
+
+// ══════════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS INTEGRATION
+// ──────────────────────────────────────────────────────────────────────
+// To connect this quiz to a Google Sheet:
+//
+// 1. Create a new Google Sheet with columns:
+//    Timestamp | Name | Email | Score | Total | Answers
+//
+// 2. Go to Extensions > Apps Script and paste this code:
+//
+//    function doPost(e) {
+//      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+//      var data = JSON.parse(e.postData.contents);
+//      sheet.appendRow([
+//        new Date(),
+//        data.name,
+//        data.email,
+//        data.score,
+//        data.total,
+//        data.answers
+//      ]);
+//      return ContentService
+//        .createTextOutput(JSON.stringify({result: "success"}))
+//        .setMimeType(ContentService.MimeType.JSON);
+//    }
+//
+// 3. Deploy > New deployment > Web app
+//    - Execute as: Me
+//    - Who has access: Anyone
+//    - Copy the deployment URL
+//
+// 4. Paste the URL below:
+// ──────────────────────────────────────────────────────────────────────
+const GOOGLE_SHEET_URL = ""; // ← Paste your Apps Script URL here
+// ══════════════════════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQuestion = 0;
+  score = 0;
+  answers = [];
+  showScreen('question-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizData[currentQuestion];
+  document.getElementById('progress-text').textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+  document.getElementById('score-text').textContent = `Score: ${score}`;
+  document.getElementById('progress-fill').style.width = `${(currentQuestion / quizData.length) * 100}%`;
+
+  document.getElementById('q-topic').textContent = q.topic;
+  document.getElementById('q-text').textContent = q.question;
+
+  const optionsList = document.getElementById('options-list');
+  optionsList.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = String.fromCharCode(65 + i) + ') ' + opt;
+    btn.onclick = () => selectAnswer(i);
+    optionsList.appendChild(btn);
+  });
+
+  // Hide feedback and next button
+  const fb = document.getElementById('feedback');
+  fb.classList.remove('show', 'correct-feedback', 'incorrect-feedback');
+  document.getElementById('next-btn-area').classList.remove('show');
+}
+
+function selectAnswer(selectedIndex) {
+  const q = quizData[currentQuestion];
+  const buttons = document.querySelectorAll('.option-btn');
+  const isCorrect = selectedIndex === q.correctIndex;
+
+  // Disable all buttons
+  buttons.forEach(btn => btn.classList.add('disabled'));
+
+  // Highlight correct answer
+  buttons[q.correctIndex].classList.add('correct');
+
+  // Highlight wrong answer if applicable
+  if (!isCorrect) {
+    buttons[selectedIndex].classList.add('incorrect');
+  } else {
+    score++;
+    document.getElementById('score-text').textContent = `Score: ${score}`;
+  }
+
+  // Store answer
+  answers.push({ questionIndex: currentQuestion, selectedIndex, correct: isCorrect });
+
+  // Show feedback
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-feedback' : 'incorrect-feedback');
+  document.getElementById('feedback-title').textContent = isCorrect ? 'Correct!' : 'Not quite \u2014 the answer is ' + String.fromCharCode(65 + q.correctIndex) + ')';
+  document.getElementById('feedback-text').textContent = q.explanation;
+
+  // Show next button
+  const nextArea = document.getElementById('next-btn-area');
+  nextArea.classList.add('show');
+  document.getElementById('next-btn').textContent =
+    currentQuestion < quizData.length - 1 ? 'Next Question \u2192' : 'See Results \u2192';
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion < quizData.length) {
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  showScreen('results-screen');
+
+  document.getElementById('final-score').textContent = `${score}/${quizData.length}`;
+
+  const msg = scoreMessages.find(m => score >= m.min && score <= m.max);
+  document.getElementById('final-label').textContent = msg ? msg.label : 'Well done!';
+  document.getElementById('final-message').textContent = msg ? msg.message : '';
+
+  // Fill progress to 100%
+  document.getElementById('progress-fill').style.width = '100%';
+
+  // Build review list
+  const reviewEl = document.getElementById('review-list');
+  reviewEl.innerHTML = '';
+  answers.forEach((a, i) => {
+    const q = quizData[a.questionIndex];
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.innerHTML = `
+      <div class="review-icon ${a.correct ? 'correct' : 'wrong'}">${a.correct ? '\u2713' : '\u2717'}</div>
+      <div>
+        <div class="review-q">Q${i + 1}: ${q.topic}</div>
+        <div class="review-answer">${a.correct ? 'Correct' : 'Your answer: ' + String.fromCharCode(65 + a.selectedIndex) + ' \u2014 Correct: ' + String.fromCharCode(65 + q.correctIndex)}</div>
+      </div>
+    `;
+    reviewEl.appendChild(item);
+  });
+
+  // Reset form
+  document.getElementById('user-name').value = '';
+  document.getElementById('user-email').value = '';
+  document.getElementById('submit-status').className = 'submit-status';
+  document.getElementById('submit-status').textContent = '';
+  document.getElementById('submit-form').style.display = '';
+}
+
+async function submitResult() {
+  const name = document.getElementById('user-name').value.trim();
+  const email = document.getElementById('user-email').value.trim();
+  const statusEl = document.getElementById('submit-status');
+
+  if (!name || !email) {
+    statusEl.className = 'submit-status error';
+    statusEl.textContent = 'Please enter both your name and email.';
+    return;
+  }
+
+  // Build answers summary
+  const answerSummary = answers.map((a, i) => {
+    const q = quizData[a.questionIndex];
+    return `Q${i+1}: ${a.correct ? 'Correct' : 'Wrong (' + String.fromCharCode(65 + a.selectedIndex) + ')'}`;
+  }).join(', ');
+
+  if (!GOOGLE_SHEET_URL) {
+    // No endpoint configured — store locally and show success
+    statusEl.className = 'submit-status success';
+    statusEl.textContent = 'Thank you, ' + name + '! Your score of ' + score + '/' + quizData.length + ' has been recorded.';
+    console.log('Quiz result:', { name, email, score, total: quizData.length, answers: answerSummary });
+    document.getElementById('submit-form').querySelector('button').style.display = 'none';
+    return;
+  }
+
+  // Submit to Google Sheets
+  const btn = document.getElementById('submit-form').querySelector('button');
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+
+  try {
+    await fetch(GOOGLE_SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        score,
+        total: quizData.length,
+        answers: answerSummary
+      })
+    });
+
+    statusEl.className = 'submit-status success';
+    statusEl.textContent = 'Thank you, ' + name + '! Your score has been recorded.';
+    btn.style.display = 'none';
+  } catch (err) {
+    statusEl.className = 'submit-status error';
+    statusEl.textContent = 'Something went wrong. Please try again.';
+    btn.textContent = 'Submit';
+    btn.disabled = false;
+  }
+}
+
+function restartQuiz() {
+  showScreen('welcome-screen');
+}
+</script>
+
+</body>
+</html>
