@@ -495,7 +495,7 @@
     </div>
 
     <div class="restart-area">
-      <button class="restart-link" onclick="restartQuiz()">&#x21BB; Take the quiz again</button>
+      <button class="restart-link" onclick="resetQuiz()">&#x21BB; Start quiz</button>
     </div>
   </div>
 
@@ -601,7 +601,7 @@ let answers = []; // stores { questionIndex, selectedIndex, correct }
 //
 // 4. Paste the URL below:
 // ──────────────────────────────────────────────────────────────────────
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyyewWYo3O6Bg-RhVQb3TpWX8LjIglIsqVmdEpN6gmjh9bvdPa85CQr_zv327wukns/exec"; // ← Paste your Apps Script URL here
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyyewWYo3O6Bg-RhVQb3TpWX8LjIglIsqVmdEpN6gmjh9bvdPa85CQr_zv327wukns/exec";
 // ══════════════════════════════════════════════════════════════════════
 
 function showScreen(id) {
@@ -637,13 +637,19 @@ function renderQuestion() {
     optionsList.appendChild(btn);
   });
 
-  // Hide feedback and next button
+  // Reset answer lock and hide feedback/next button
+  answered = false;
   const fb = document.getElementById('feedback');
   fb.classList.remove('show', 'correct-feedback', 'incorrect-feedback');
   document.getElementById('next-btn-area').classList.remove('show');
 }
 
+let answered = false;
+
 function selectAnswer(selectedIndex) {
+  if (answered) return; // Prevent double-clicks
+  answered = true;
+
   const q = quizData[currentQuestion];
   const buttons = document.querySelectorAll('.option-btn');
   const isCorrect = selectedIndex === q.correctIndex;
@@ -780,9 +786,41 @@ async function submitResult() {
   }
 }
 
-function restartQuiz() {
+function resetQuiz() {
+  currentQuestion = 0;
+  score = 0;
+  answers = [];
+
+  // Reset form fields and submit button
+  document.getElementById('user-name').value = '';
+  document.getElementById('user-email').value = '';
+  document.getElementById('submit-status').className = 'submit-status';
+  document.getElementById('submit-status').textContent = '';
+  const submitBtn = document.getElementById('submit-form').querySelector('button');
+  submitBtn.style.display = '';
+  submitBtn.textContent = 'Submit';
+  submitBtn.disabled = false;
+
   showScreen('welcome-screen');
 }
+
+// ── Inactivity timer (30s) ───────────────────────────────────────────
+let inactivityTimer = null;
+const INACTIVITY_TIMEOUT = 30000;
+
+function resetInactivityTimer() {
+  if (inactivityTimer) clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    resetQuiz();
+  }, INACTIVITY_TIMEOUT);
+}
+
+['click', 'touchstart', 'keydown', 'scroll'].forEach(evt => {
+  document.addEventListener(evt, resetInactivityTimer, { passive: true });
+});
+
+// Start the timer on page load
+resetInactivityTimer();
 </script>
 
 </body>
