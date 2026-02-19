@@ -393,6 +393,15 @@
     font-family: inherit;
   }
 
+  /* ── Timer ───────────────────────────────────────── */
+  .quiz-timer {
+    text-align: center;
+    padding: 12px 0 20px;
+    font-size: 0.9rem;
+    color: var(--grey);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ── Kiosk / iPad optimisations ─────────────────── */
   @media (max-width: 768px) {
     .container { padding: 16px; }
@@ -466,6 +475,8 @@
     <div class="next-btn-area" id="next-btn-area">
       <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next Question &#x2192;</button>
     </div>
+
+    <div class="quiz-timer" id="quiz-timer">&#x23F1; <span id="timer-display">00:00</span></div>
   </div>
 
   <!-- ═══════════ RESULTS SCREEN ═══════════ -->
@@ -567,6 +578,9 @@ const scoreMessages = [
 let currentQuestion = 0;
 let score = 0;
 let answers = []; // stores { questionIndex, selectedIndex, correct }
+let timerStart = null;
+let timerInterval = null;
+let elapsedMs = 0;
 
 // ══════════════════════════════════════════════════════════════════════
 // GOOGLE SHEETS INTEGRATION
@@ -604,6 +618,35 @@ let answers = []; // stores { questionIndex, selectedIndex, correct }
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyyewWYo3O6Bg-RhVQb3TpWX8LjIglIsqVmdEpN6gmjh9bvdPa85CQr_zv327wukns/exec";
 // ══════════════════════════════════════════════════════════════════════
 
+function startTimer() {
+  timerStart = Date.now();
+  elapsedMs = 0;
+  updateTimerDisplay();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimerDisplay, 1000);
+}
+
+function stopTimer() {
+  if (timerStart) elapsedMs = Date.now() - timerStart;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function resetTimer() {
+  stopTimer();
+  timerStart = null;
+  elapsedMs = 0;
+  document.getElementById('timer-display').textContent = '00:00';
+}
+
+function updateTimerDisplay() {
+  if (!timerStart) return;
+  const ms = Date.now() - timerStart;
+  const totalSec = Math.floor(ms / 1000);
+  const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
+  const secs = String(totalSec % 60).padStart(2, '0');
+  document.getElementById('timer-display').textContent = mins + ':' + secs;
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -615,6 +658,7 @@ function startQuiz() {
   score = 0;
   answers = [];
   showScreen('question-screen');
+  startTimer();
   renderQuestion();
 }
 
@@ -670,6 +714,9 @@ function selectAnswer(selectedIndex) {
 
   // Store answer
   answers.push({ questionIndex: currentQuestion, selectedIndex, correct: isCorrect });
+
+  // Stop timer on last question
+  if (currentQuestion === quizData.length - 1) stopTimer();
 
   // Show feedback
   const fb = document.getElementById('feedback');
@@ -751,7 +798,7 @@ async function submitResult() {
     // No endpoint configured — store locally and show success
     statusEl.className = 'submit-status success';
     statusEl.textContent = 'Thank you, ' + name + '! Your score of ' + score + '/' + quizData.length + ' has been recorded.';
-    console.log('Quiz result:', { name, email, score, total: quizData.length, answers: answerSummary });
+    console.log('Quiz result:', { name, email, score, total: quizData.length, answers: answerSummary, timeMs: elapsedMs });
     document.getElementById('submit-form').querySelector('button').style.display = 'none';
     return;
   }
@@ -771,7 +818,8 @@ async function submitResult() {
         email,
         score,
         total: quizData.length,
-        answers: answerSummary
+        answers: answerSummary,
+        timeMs: elapsedMs
       })
     });
 
@@ -790,6 +838,7 @@ function resetQuiz() {
   currentQuestion = 0;
   score = 0;
   answers = [];
+  resetTimer();
 
   // Reset form fields and submit button
   document.getElementById('user-name').value = '';
